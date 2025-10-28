@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 
@@ -6,6 +6,7 @@ const Menu = () => {
   const [selectedMenu, setSelectedMenu] = useState(0);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const navigate = useNavigate();
+  const dropdownRef = useRef(null);
 
   // ✅ Load API URL from .env
   const API_URL = process.env.REACT_APP_API_URL;
@@ -18,10 +19,20 @@ const Menu = () => {
     setIsProfileDropdownOpen(!isProfileDropdownOpen);
   };
 
+  // ✅ Close dropdown if click outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsProfileDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   const handleLogout = async () => {
     try {
       const token = localStorage.getItem("token");
-
       if (!token) {
         alert("No active session found.");
         navigate("/login");
@@ -31,11 +42,7 @@ const Menu = () => {
       const response = await axios.post(
         `${API_URL}/logout`,
         {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
       if (response.status === 200) {
@@ -129,47 +136,51 @@ const Menu = () => {
 
         <hr />
 
-        {/* Profile section */}
-        <div className="profile position-relative" onClick={handleProfileClick}>
+        {/* Profile Dropdown */}
+        <div className="profile position-relative" ref={dropdownRef}>
           <div
-            className="avatar bg-primary text-white fw-bold rounded-circle d-flex align-items-center justify-content-center"
-            style={{ width: "40px", height: "40px", cursor: "pointer" }}
+            className="d-flex align-items-center"
+            style={{ cursor: "pointer" }}
+            onClick={handleProfileClick}
           >
-            ZU
+            <div
+              className="avatar bg-primary text-white fw-bold rounded-circle d-flex align-items-center justify-content-center"
+              style={{ width: "40px", height: "40px" }}
+            >
+              ZU
+            </div>
+            <p className="username ms-2 mb-0 fw-semibold text-dark">USERID</p>
           </div>
-          <p className="username ms-2 mb-0 fw-semibold text-dark">USERID</p>
 
-          {/* 🌟 Stylish Dropdown */}
           {isProfileDropdownOpen && (
             <div
-              className="position-absolute end-0 mt-2 p-3 shadow-lg rounded-3 border"
+              className="dropdown-menu show"
               style={{
-                width: "200px",
-                background: "rgba(255, 255, 255, 0.95)",
-                backdropFilter: "blur(10px)",
-                border: "1px solid rgba(0, 0, 0, 0.1)",
-                animation: "fadeIn 0.3s ease-in-out",
-                zIndex: 1000,
+                position: "absolute",
+                right: 0,
+                top: "110%",
+                minWidth: "180px",
+                border: "1px solid #e0e0e0",
+                borderRadius: "8px",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                background: "#fff",
+                padding: "8px 0",
+                zIndex: 2000,
               }}
             >
-              <div className="text-center mb-3">
-                <i className="bi bi-person-circle fs-3 text-primary"></i>
-                <p className="fw-semibold mt-2 mb-0">USERID</p>
-                <small className="text-muted">Trader Account</small>
-              </div>
-
-              <hr className="my-2" />
-
               <button
-                className="btn btn-danger w-100 fw-semibold d-flex align-items-center justify-content-center gap-2"
                 onClick={handleLogout}
+                className="dropdown-item text-danger fw-semibold text-center"
                 style={{
-                  borderRadius: "12px",
-                  padding: "10px 0",
-                  transition: "all 0.3s ease",
+                  background: "none",
+                  border: "none",
+                  padding: "10px",
+                  transition: "0.2s",
                 }}
+                onMouseEnter={(e) => (e.target.style.background = "#f8f9fa")}
+                onMouseLeave={(e) => (e.target.style.background = "none")}
               >
-                <i className="bi bi-box-arrow-right"></i> Logout
+                <i className="bi bi-box-arrow-right me-2"></i>Logout
               </button>
             </div>
           )}
