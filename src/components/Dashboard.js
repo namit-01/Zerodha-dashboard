@@ -11,6 +11,7 @@ import Summary from "./Summary";
 import WatchList from "./WatchList";
 import { GeneralContextProvider } from "./GeneralContext";
 import Logout from "./Logout";
+import { Login } from "@mui/icons-material";
 const Dashboard = () => {
   return (
     <div className="dashboard-container">
@@ -26,6 +27,7 @@ const Dashboard = () => {
           <Route path="/funds" element={<Funds />} />
           <Route path="/apps" element={<Apps />} />
           <Route path="/logout" element={<Logout />} />
+          <Route path="/login" element={<Login />} />
         </Routes>
       </div>
     </div>
